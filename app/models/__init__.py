@@ -1,9 +1,9 @@
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.dialects.sqlite import JSON
+from datetime import datetime
+import uuid
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-import uuid
-from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.sqlite import JSON
 
 db = SQLAlchemy()
 
@@ -123,30 +123,3 @@ class ModeloIA(db.Model):
     ruta_modelo = db.Column(db.String(500))
     fecha_implementacion = db.Column(db.DateTime, default=datetime.utcnow)
     metricas = db.Column(JSON)
-
-def init_db():
-    """Inicializa la base de datos con datos de ejemplo"""
-    db.create_all()
-    
-    # Crear institución por defecto
-    if not Institucion.query.first():
-        institucion = Institucion(
-            nombre="Hospital General - Sistema TB Detection",
-            direccion="Dirección del hospital principal",
-            telefono="+1234567890",
-            email="contacto@hospital.com"
-        )
-        db.session.add(institucion)
-        db.session.commit()
-        
-        # Crear modelo IA por defecto
-        modelo = ModeloIA(
-            nombre="TB_Detection_CNN",
-            version="1.0.0",
-            arquitectura="Custom CNN",
-            es_activo=True,
-            ruta_modelo="models/tb_model.h5",
-            metricas={"accuracy": 0.95, "sensitivity": 0.93, "specificity": 0.96}
-        )
-        db.session.add(modelo)
-        db.session.commit()

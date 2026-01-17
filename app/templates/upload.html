@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Estudio - TB Detection{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-container {
+        border: 2px dashed #ccc;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        background: #f8f9fa;
+        cursor: pointer;
+    }
+
+    .upload-container:hover,
+    .upload-container.dragover {
+        border-color: #0d6efd;
+        background: #e9ecef;
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: #6c757d;
+        transition: transform 0.3s ease;
+    }
+
+    .upload-container:hover .upload-icon {
+        transform: translateY(-5px);
+        color: #0d6efd;
+    }
+
+    .preview-image {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 8px;
+        display: none;
+    }
+
+    .processing-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        display: none;
+        z-index: 1050;
+        backdrop-filter: blur(5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-10">
+            <div class="row mb-4">
+                <div class="col">
+                    <h2 class="fw-bold"><i class="fas fa-upload me-3 text-primary"></i>Nuevo Análisis por Imágenes</h2>
+                    <p class="text-muted">Complete los datos del paciente y cargue la radiografía para el análisis por
+                        IA.</p>
+                </div>
+            </div>
+
+            <form id="upload-form" enctype="multipart/form-data">
+                <div class="row g-4">
+                    <!-- Patient Information -->
+                    <div class="col-lg-5">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-white border-0 py-3">
+                                <h5 class="mb-0 fw-bold">Datos del Paciente</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-muted">Nombre Completo</label>
+                                    <input type="text" class="form-control" name="nombre_paciente" required
+                                        placeholder="Ej. Juan Pérez">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-muted">Número de Expediente</label>
+                                    <input type="text" class="form-control" name="expediente" required
+                                        placeholder="ID-12345">
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted">Edad</label>
+                                        <input type="number" class="form-control" name="edad" min="0" max="120">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-bold text-muted">Género</label>
+                                        <select class="form-select" name="genero">
+                                            <option value="M">Masculino</option>
+                                            <option value="F">Femenino</option>
+                                            <option value="Otro">Otro</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-muted">Prioridad</label>
+                                    <select class="form-select border-start border-3" name="prioridad"
+                                        id="priority-select">
+                                        <option value="rutina" class="text-success">Rutina</option>
+                                        <option value="urgente" class="text-warning">Urgente</option>
+                                        <option value="critico" class="text-danger">Crítico / Inmediato</option>
+                                    </select>
+                                </div>
+                                <div class="mb-0">
+                                    <label class="form-label small fw-bold text-muted">Notas Clínicas</label>
+                                    <textarea class="form-control" name="notas_clinicas" rows="3"
+                                        placeholder="Síntomas, antecedentes..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="col-lg-7">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div
+                                class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0 fw-bold">Carga de Radiografía (Tórax)</h5>
+                                <span class="badge bg-light text-muted">Formatos: JPG, PNG, DCM</span>
+                            </div>
+                            <div class="card-body">
+                                <input type="file" id="image-input" name="image" accept=".png,.jpg,.jpeg,.dcm"
+                                    class="d-none">
+                                <div class="upload-container py-5 text-center px-4" id="drop-zone">
+                                    <div id="upload-prompt">
+                                        <i class="fas fa-cloud-upload-alt upload-icon mb-3"></i>
+                                        <h5>Arrastra la radiografía aquí</h5>
+                                        <p class="text-muted small">O haz clic para buscar en tu equipo</p>
+                                    </div>
+                                    <div id="image-preview-container">
+                                        <img src="" id="image-preview" class="preview-image mx-auto mb-3 shadow-sm">
+                                        <div id="file-info" class="d-none small text-muted"></div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-warning mt-4 small border-0">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Aviso:</strong> El resultado proporcionado por la IA es una herramienta de
+                                    apoyo y debe ser validado por un profesional cualificado.
+                                </div>
+
+                                <div class="mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg w-100 shadow-sm py-3 fw-bold"
+                                        id="submit-btn" disabled>
+                                        <i class="fas fa-microscope me-2"></i>Iniciar Análisis de IA
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Processing Overlay -->
+<div class="processing-overlay flex-column align-items-center justify-content-center">
+    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status text-p"></div>
+    <h4 class="fw-bold">Procesando Imagen...</h4>
+    <p class="text-muted">Nuestra IA está analizando los hallazgos radiológicos.</p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Sistema de Detección de Tuberculosis - IA Médica{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-white py-5">
+    <div class="container container-hero py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <span class="badge bg-light text-primary mb-3 px-3 py-2 fw-semibold">
+                    <i class="fas fa-robot me-2"></i>Powered by Deep Learning
+                </span>
+                <h1 class="display-3 fw-bold mb-4">Detección Inteligente de Tuberculosis</h1>
+                <p class="lead mb-4 opacity-90">
+                    Sistema avanzado de apoyo al diagnóstico médico basado en inteligencia artificial.
+                    Análisis rápido y preciso de radiografías de tórax en segundos.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-warning btn-lg px-4 fw-bold shadow">
+                        Empezar Ahora <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                    <a href="#features" class="btn btn-outline-light btn-lg px-4">
+                        Saber Más
+                    </a>
+                </div>
+                <div class="mt-5 d-flex align-items-center gap-4 opacity-75">
+                    <div>
+                        <h4 class="mb-0 fw-bold">95%</h4>
+                        <small>Precisión</small>
+                    </div>
+                    <div class="vr"></div>
+                    <div>
+                        <h4 class="mb-0 fw-bold">
+                            < 2s</h4>
+                                <small>Tiempo de respuesta</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <img src="{{ url_for('static', filename='img/landing_hero.png') }}" alt="IA médica" class="hero-image">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-5 bg-white">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold text-dark">¿Por qué elegir nuestro sistema?</h2>
+            <p class="text-muted lead">Tecnología de vanguardia para mejorar la salud pública</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card p-4 rounded-4 border-0 shadow-sm">
+                    <div class="icon-circle bg-primary-soft text-primary mb-4 p-3 rounded-circle d-inline-block">
+                        <i class="fas fa-bolt fa-2x"></i>
+                    </div>
+                    <h3 class="h4 fw-bold">Resultados Instantáneos</h3>
+                    <p class="text-muted">Procesa imágenes de alta resolución en tiempo real, proporcionando
+                        diagnósticos preliminares en menos de 2 segundos.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card p-4 rounded-4 border-0 shadow-sm">
+                    <div class="icon-circle bg-success-soft text-success mb-4 p-3 rounded-circle d-inline-block">
+                        <i class="fas fa-shield-alt fa-2x"></i>
+                    </div>
+                    <h3 class="h4 fw-bold">Alta Sensibilidad</h3>
+                    <p class="text-muted">Nuestro modelo ha sido entrenado con miles de casos clínicos reales para
+                        maximizar la detección temprana de anomalías.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card p-4 rounded-4 border-0 shadow-sm">
+                    <div class="icon-circle bg-info-soft text-info mb-4 p-3 rounded-circle d-inline-block">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                    <h3 class="h4 fw-bold">Seguimiento Exhaustivo</h3>
+                    <p class="text-muted">Historial completo de pacientes y estudios para monitorizar la evolución y el
+                        impacto de los tratamientos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

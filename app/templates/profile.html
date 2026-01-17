@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Perfil del Médico - TB Detection{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                <div class="bg-primary py-5 px-4 text-center text-white">
+                    <div class="mb-3">
+                        <div class="bg-white text-primary rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm"
+                            style="width: 100px; height: 100px;">
+                            <i class="fas fa-user-md fa-4x"></i>
+                        </div>
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ user.nombre_completo }}</h2>
+                    <p class="mb-0 opacity-75">{{ user.especialidad or 'Médico Especialista' }}</p>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row mb-5">
+                        <div class="col-md-6 mb-4">
+                            <div class="p-3 bg-light rounded-3 h-100">
+                                <label class="small text-muted text-uppercase fw-bold mb-1">Usuario</label>
+                                <p class="mb-0 fs-5">{{ user.username }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="p-3 bg-light rounded-3 h-100">
+                                <label class="small text-muted text-uppercase fw-bold mb-1">Email Institucional</label>
+                                <p class="mb-0 fs-5">{{ user.email }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="p-3 bg-light rounded-3 h-100">
+                                <label class="small text-muted text-uppercase fw-bold mb-1">Institución</label>
+                                <p class="mb-0 fs-5">{{ user.institucion.nombre if user.institucion else 'N/A' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="p-3 bg-light rounded-3 h-100">
+                                <label class="small text-muted text-uppercase fw-bold mb-1">Miembro desde</label>
+                                <p class="mb-0 fs-5">{{ user.created_at.strftime('%d %b, %Y') }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center border-top pt-4">
+                        <div class="text-muted">
+                            <small><i class="fas fa-shield-alt me-1"></i> Datos protegidos por HIPAA</small>
+                        </div>
+                        <button type="button" class="btn btn-primary px-4" data-bs-toggle="modal"
+                            data-bs-target="#editProfileModal">
+                            <i class="fas fa-edit me-2"></i>Editar Perfil
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Edición de Perfil -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 bg-light">
+                <h5 class="modal-title fw-bold" id="editProfileModalLabel">Actualizar Perfil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="edit-alert" class="alert d-none"></div>
+                <form id="edit-profile-form">
+                    <div class="mb-3">
+                        <label for="edit_nombre" class="form-label small fw-bold text-muted">Nombre Completo</label>
+                        <input type="text" class="form-control" id="edit_nombre" name="nombre_completo"
+                            value="{{ user.nombre_completo }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_email" class="form-label small fw-bold text-muted">Correo Electrónico</label>
+                        <input type="email" class="form-control" id="edit_email" name="email" value="{{ user.email }}"
+                            required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_especialidad" class="form-label small fw-bold text-muted">Especialidad</label>
+                        <input type="text" class="form-control" id="edit_especialidad" name="especialidad"
+                            value="{{ user.especialidad }}">
+                    </div>
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary py-2 fw-bold shadow-sm">
+                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function () {
+        $('#edit-profile-form').on('submit', function (e) {
+            e.preventDefault();
+            const alert = $('#edit-alert');
+            const submitBtn = $(this).find('button[type="submit"]');
+
+            alert.addClass('d-none').removeClass('alert-danger alert-success');
+            submitBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Guardando...');
+
+            $.ajax({
+                url: "{{ url_for('api.update_profile') }}",
+                method: 'POST',
+                data: $(this).serialize(),
+                success: function (response) {
+                    alert.text(response.message).addClass('alert-success').removeClass('d-none');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                },
+                error: function (xhr) {
+                    const error = xhr.responseJSON ? xhr.responseJSON.error : 'Error al actualizar el perfil';
+                    alert.text(error).addClass('alert-danger').removeClass('d-none');
+                    submitBtn.prop('disabled', false).html('<i class="fas fa-save me-2"></i>Guardar Cambios');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

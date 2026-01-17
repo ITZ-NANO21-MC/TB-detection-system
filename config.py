@@ -23,7 +23,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Configuración de uploads - RUTAS MEJORADAS
-    STATIC_DIR = os.path.join(BASE_DIR, 'static')
+    STATIC_DIR = os.path.join(BASE_DIR, 'app', 'static')
     UPLOAD_FOLDER = os.path.join(STATIC_DIR, 'uploads')
     
     # Crear directorios necesarios

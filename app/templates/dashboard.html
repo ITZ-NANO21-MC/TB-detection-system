@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - Sistema TB{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<section class="py-4 bg-primary text-white mb-4 shadow-sm">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h3 mb-1">Bienvenido de nuevo, Dr. {{ current_user.nombre_completo }}</h1>
+                <p class="mb-0 opacity-75">Panel de Control de Diagnósticos de Tuberculosis</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{{ url_for('main.upload_page') }}" class="btn btn-warning px-4">
+                    <i class="fas fa-plus-circle me-2"></i>Nuevo Estudio
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Stats -->
+<section class="py-4 bg-light">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card stat-card border-0">
+                    <div class="card-body text-center">
+                        <i class="fas fa-file-medical text-primary fa-2x mb-3"></i>
+                        <h3 id="total-studies">0</h3>
+                        <p class="text-muted mb-0">Estudios Realizados</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card border-0">
+                    <div class="card-body text-center">
+                        <i class="fas fa-virus text-danger fa-2x mb-3"></i>
+                        <h3 id="tb-cases">0</h3>
+                        <p class="text-muted mb-0">Casos TB Detectados</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card border-0">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle text-success fa-2x mb-3"></i>
+                        <h3 id="normal-cases">0</h3>
+                        <p class="text-muted mb-0">Estudios Normales</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card border-0">
+                    <div class="card-body text-center">
+                        <i class="fas fa-bolt text-warning fa-2x mb-3"></i>
+                        <h3 id="today-studies">0</h3>
+                        <p class="text-muted mb-0">Hoy</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Studies Section -->
+<section id="studies-section" class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col">
+                <h2 class="fw-bold">Estudios Recientes</h2>
+                <p class="text-muted">Historial de análisis realizados en el sistema</p>
+            </div>
+            <div class="col-auto">
+                <button id="refresh-studies" class="btn btn-outline-primary">
+                    <i class="fas fa-sync-alt me-2"></i>Actualizar
+                </button>
+            </div>
+        </div>
+
+        <!-- Studies Table -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="studies-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Paciente</th>
+                                <th>Expediente</th>
+                                <th>Diagnóstico</th>
+                                <th>Confianza IA</th>
+                                <th>Prioridad</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studies-tbody">
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                    <p class="mt-2 text-muted">Cargando estudios...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal para detalles del estudio -->
+<div class="modal fade" id="studyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles del Estudio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="study-modal-body">
+                <!-- Contenido cargado dinámicamente -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Inicializar la aplicación
+        if (typeof tbApp !== 'undefined') {
+            // Cargar estudios al iniciar
+            if (typeof studiesManager !== 'undefined') {
+                studiesManager.loadStudies();
+            }
+
+            // Configurar evento de actualización
+            const refreshButton = document.getElementById('refresh-studies');
+            if (refreshButton) {
+                refreshButton.addEventListener('click', function () {
+                    if (typeof studiesManager !== 'undefined') {
+                        studiesManager.loadStudies();
+                    }
+                });
+            }
+
+            // Actualizar cada 30 segundos
+            setInterval(function () {
+                if (typeof studiesManager !== 'undefined') {
+                    studiesManager.loadStudies();
+                }
+            }, 30000);
+        }
+    });
+</script>
+{% endblock %}
