@@ -40,6 +40,42 @@ $(document).ready(function () {
             }
         });
     });
+
+    // Controles de imagen (Zoom y Reset)
+    let currentZoom = 1;
+    const zoomStep = 0.2;
+    const maxZoom = 3;
+    const minZoom = 0.5;
+
+    $('#zoom-in').on('click', function () {
+        if (currentZoom < maxZoom) {
+            currentZoom += zoomStep;
+            updateImageTransform();
+        }
+    });
+
+    $('#zoom-out').on('click', function () {
+        if (currentZoom > minZoom) {
+            currentZoom -= zoomStep;
+            updateImageTransform();
+        }
+    });
+
+    $('#zoom-reset').on('click', function () {
+        currentZoom = 1;
+        updateImageTransform();
+    });
+
+    function updateImageTransform() {
+        $('.study-image, .heatmap-overlay').css('transform', `scale(${currentZoom})`);
+    }
+
+    // Toggle Mapa de Calor
+    $('#toggle-heatmap').on('click', function () {
+        const overlay = $('.heatmap-overlay');
+        $(this).toggleClass('active btn-primary btn-outline-primary');
+        overlay.toggle();
+    });
 });
 
 function loadStudyDetails() {
@@ -87,7 +123,15 @@ function loadStudyDetails() {
             // Imagen
             const imgContainer = $('#image-viewer');
             imgContainer.empty();
-            imgContainer.append(`<img src="${data.estudio.imagen_url}" class="study-image" alt="Radiografía del paciente">`);
+            imgContainer.append(`
+                <img src="${data.estudio.imagen_url}" class="study-image" id="main-xray" alt="Radiografía del paciente">
+                ${data.resultado_ia.mapa_calor_url ? `<img src="${data.resultado_ia.mapa_calor_url}" class="heatmap-overlay" id="heatmap-img">` : ''}
+            `);
+
+            // Mostrar botón de heatmap si existe
+            if (data.resultado_ia.mapa_calor_url) {
+                $('#toggle-heatmap').removeClass('d-none');
+            }
 
             // Diagnóstico existente
             if (data.diagnostico) {

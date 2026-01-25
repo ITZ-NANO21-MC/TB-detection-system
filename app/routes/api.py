@@ -127,6 +127,7 @@ def predict():
             deteccion_tb=results['deteccion_tb'],
             nivel_riesgo=results['nivel_riesgo'],
             hallazgos_detectados={'general': results['clase_predicha']},
+            mapa_calor_ruta=results.get('heatmap_ruta'),
             version_modelo=modelo.version,
             confianza_modelo=0.95 # Simulado
         )
@@ -202,7 +203,8 @@ def get_study_detail(study_id):
             'probabilidad_tb': study.resultado_ia.probabilidad_tb if study.resultado_ia else 0,
             'nivel_riesgo': study.resultado_ia.nivel_riesgo if study.resultado_ia else 'bajo',
             'version_modelo': study.resultado_ia.version_modelo if study.resultado_ia else '1.0.0',
-            'confianza_modelo': study.resultado_ia.confianza_modelo if study.resultado_ia else 0.95
+            'confianza_modelo': study.resultado_ia.confianza_modelo if study.resultado_ia else 0.95,
+            'mapa_calor_url': url_for('static', filename=f'uploads/{study.resultado_ia.mapa_calor_ruta}') if study.resultado_ia and study.resultado_ia.mapa_calor_ruta else None
         } if study.resultado_ia else None,
         'diagnostico': {
             'final': study.diagnosticos[0].diagnostico_final,
