@@ -33,7 +33,7 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
     
     # Configuración del modelo
-    MODELS_DIR = os.path.join(BASE_DIR, 'models')
+    MODELS_DIR = os.path.join(BASE_DIR, 'models_TB')
     os.makedirs(MODELS_DIR, exist_ok=True)
     MODEL_PATH = os.path.join(MODELS_DIR, 'tb_model.h5')
     IMG_SIZE = (224, 224)

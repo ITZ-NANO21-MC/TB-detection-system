@@ -15,14 +15,14 @@ class TBInference:
         """Carga el modelo de TensorFlow/Keras"""
         if os.path.exists(self.model_path):
             try:
-                # En un entorno real cargaríamos el modelo. 
-                # Para este MVP simulamos la carga si el archivo existe.
-                # self.model = tf.keras.models.load_model(self.model_path)
-                print(f"Modelo cargado desde {self.model_path}")
+                self.model = tf.keras.models.load_model(self.model_path)
+                print(f"Modelo cargado correctamente desde {self.model_path}")
                 return True
             except Exception as e:
                 print(f"Error cargando el modelo: {str(e)}")
                 return False
+        else:
+            print(f"El archivo del modelo no existe en: {self.model_path}")
         return False
 
     def preprocess_image(self, image_path):
@@ -34,18 +34,26 @@ class TBInference:
         return img_array
 
     def predict(self, image_path):
-        """Realiza la predicción"""
-        # En un sistema real usaríamos el modelo:
-        # prediction = self.model.predict(self.preprocess_image(image_path))
+        """Realiza la predicción real usando el modelo cargado"""
+        if self.model is None:
+            if not self.load_model():
+                raise Exception("El modelo no pudo ser cargado para la predicción")
         
-        # Simulación de predicción para fines demostrativos
-        import random
-        import time
+        # Preprocesar imagen
+        img_array = self.preprocess_image(image_path)
         
-        # Simulamos carga de procesamiento
-        time.sleep(1.5)
+        # Realizar inferencia
+        prediction = self.model.predict(img_array)
         
-        probabilidad = random.random()
+        # El modelo suele devolver [probabilidad_normal, probabilidad_tb] o similar
+        # Ajustamos según el formato común de salida del modelo (Binary o Multi-class)
+        if prediction.shape[1] == 1:
+            # Caso binario (Sigmoid): una sola salida
+            probabilidad = float(prediction[0][0])
+        else:
+            # Caso categórico (Softmax): elegimos la clase de TB (asumiendo que es el índice 1)
+            probabilidad = float(prediction[0][1])
+        
         deteccion = probabilidad > 0.5
         
         return {
