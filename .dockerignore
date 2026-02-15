@@ -1,0 +1,24 @@
+# Caches de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
+env/
+venv/
+.env
+
+# Base de datos local (opcional, si se quiere una limpia en el contenedor)
+# tb_detection.db
+instance/
+
+# Git
+.git
+.gitignore
+
+# Documentos y otros archivos innecesarios
+README.md
+model_summary.txt
+.gemini/
+.agent/
+brain/
