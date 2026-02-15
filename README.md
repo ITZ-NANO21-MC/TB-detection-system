@@ -52,7 +52,7 @@ Sistema web avanzado para el apoyo al diagnóstico de tuberculosis pulmonar medi
 
 | Dashboard Principal | Subida de Imágenes | Resultados de IA |
 |---------------------|-------------------|------------------|
-| ![Dashboard](https://via.placeholder.com/300x200/4A90E2/FFFFFF?text=Dashboard) | ![Upload](https://via.placeholder.com/300x200/50E3C2/FFFFFF?text=Upload) | ![Results](https://via.placeholder.com/300x200/9013FE/FFFFFF?text=Results) |
+| ![Dashboard](TB-detection-system/Demo/Dashboard.png) | ![Upload](TB-detection-system/Demo/Upload.png) | ![Results](TB-detection-system/Demo/Results) |
 
 ### Métricas de Rendimiento
 - **Precisión del modelo**: 95%

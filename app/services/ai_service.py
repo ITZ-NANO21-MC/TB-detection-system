@@ -72,17 +72,30 @@ class TBInference:
             'heatmap_ruta': heatmap_path
         }
 
+    def find_last_conv_layer(self, model):
+        """Busca recursivamente la última capa convolucional en el modelo"""
+        for layer in reversed(model.layers):
+            # Verificar si la capa es convolucional por su nombre o tipo
+            if 'conv' in layer.name.lower() or 'conv2d' in type(layer).__name__.lower():
+                return layer.name
+            
+            # Si la capa es un modelo en sí misma (ej. un modelo base tipo MobileNet), buscar dentro
+            if hasattr(layer, 'layers'):
+                found = self.find_last_conv_layer(layer)
+                if found:
+                    return found
+        return None
+
     def generate_gradcam(self, image_path, img_array):
         """Genera un mapa de calor Grad-CAM para la imagen dada"""
-        # 1. Encontrar la última capa convolucional
-        last_conv_layer_name = None
-        for layer in reversed(self.model.layers):
-            if 'conv' in layer.name.lower():
-                last_conv_layer_name = layer.name
-                break
+        # 1. Encontrar la última capa convolucional de forma robusta
+        last_conv_layer_name = self.find_last_conv_layer(self.model)
         
         if not last_conv_layer_name:
+            print("LOG: No se encontró una capa convolucional para Grad-CAM.")
             return None
+        
+        print(f"LOG: Usando capa '{last_conv_layer_name}' para Grad-CAM.")
 
         # 2. Crear un modelo que mapee la entrada a las activaciones de la última capa conv
         grad_model = tf.keras.models.Model(
@@ -110,10 +123,12 @@ class TBInference:
         # 6. Normalizar el mapa de calor
         heatmap = np.maximum(heatmap, 0)
         max_val = np.max(heatmap)
+        print(f"LOG: Intensidad máxima del heatmap antes de normalizar: {max_val}")
         if max_val > 0:
             heatmap /= max_val
         
-        # 7. Generar imagen del mapa de calor
+        heatmap = heatmap.numpy() if hasattr(heatmap, "numpy") else heatmap
+        print(f"LOG: Heatmap normalizado generado correctamente.")
         img = Image.open(image_path).convert('RGB')
         img_size = img.size
         
@@ -159,5 +174,6 @@ class TBInference:
             
         heatmap_full_path = os.path.join(os.path.dirname(image_path), heatmap_filename)
         heatmap_rgba.save(heatmap_full_path, "PNG")
+        print(f"LOG: Heatmap guardado exitosamente en: {heatmap_full_path}")
         
         return heatmap_filename
