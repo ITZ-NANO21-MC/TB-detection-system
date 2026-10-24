@@ -8,41 +8,39 @@
 - **Fase actual**: Fase 1 — Hardening y estabilización
 - **Módulo actual**: Módulo 1 — Configuración segura, dependencias y limpieza del repositorio
 - **Estado de la fase**: En progreso
-- **Estado del módulo**: Limpieza completada; rotación de secretos y refactor pendientes
+- **Estado del módulo**: Flujo local con pesos en `models_TB/` documentado
 
 ## Última acción
 
-Limpieza y purga del repositorio (2026-10-24):
-- `.env`, `instance/`, bases SQLite, 11 imágenes médicas, `model_summary.txt` y `models_TB/tb_model.h5` eliminados del índice.
-- Historial reescrito con `git-filter-repo` y force-push a `origin/main`.
-- Repositorio reducido de ~46 MiB a ~1.2 MiB.
-- `.gitignore` actualizado (`session-*.md`, `models_TB/`, excepción de `.gitkeep`).
-- Modelo y `.env` conservados solo en local e ignorados.
+Alineación al flujo correcto (2026-10-24):
+- README actualizado: los pesos se colocan en `models_TB/tb_model.h5` desde `TB-prediction-model`.
+- `.context/` actualizado para reflejar inferencia local con archivos exportados.
+- `ai_service.py` mantiene carga opcional de TensorFlow para arrancar la app, pero el uso requiere el modelo y `requirements-local-model.txt`.
 
 ## Siguiente acción
 
-Rotar `SECRET_KEY` y credenciales de `.env`, y planificar el resto de la Fase 1 con `/plan-phase --phase 1`.
+Validar carga del modelo con los pesos colocados y completar hardening (SECRET_KEY sin default, pruebas básicas).
 
 ## Bloqueos
 
-- **Crítico**: secretos que estuvieron versionados; rotación pendiente aunque ya se purgaran del historial.
 - **Alto**: `config.py` mantiene una clave por defecto si falta `SECRET_KEY`.
 - **Alto**: ausencia total de pruebas automatizadas y de CI.
-- **Alto**: `requirements.txt` incompleto (`python-dotenv`, `matplotlib`, driver PostgreSQL ausentes).
+- **Medio**: falta el driver PostgreSQL (`psycopg2-binary`) cuando se use en producción.
 - **Medio**: sin migraciones de base de datos; `db.create_all()` en el arranque.
-- **Medio**: la app aún depende de inferencia local y de `models_TB/tb_model.h5`; falta el cliente HTTP hacia `TB-prediction-model`.
+- **Medio**: verificar que el archivo en `models_TB/` sea compatible con `TBInference`.
 
 ## Métricas de referencia
 
 | Indicador | Valor |
 |---|---|
-| Archivos versionados | 39 |
+| Archivos versionados | 36 |
 | Archivos Python de aplicación | 6 |
 | Plantillas HTML | 8 |
 | Archivos JS propios | 3 |
 | Entidades de datos | 7 |
 | Endpoints HTTP | ~12 |
-| Tamaño del historial Git | ~1.2 MiB |
+| Entorno base instalado | `.venv` (Python 3.12) |
+| Tamaño del historial Git | ~1.3 MiB |
 | Pruebas automatizadas | 0 |
 | Cobertura estimada | 0 % |
 | Deuda técnica | Alta |
@@ -53,3 +51,5 @@ Rotar `SECRET_KEY` y credenciales de `.env`, y planificar el resto de la Fase 1 
 |---|---|---|---|
 | 2026-10-24 | Adopción SDD y análisis profundo | 1 | 1 |
 | 2026-10-24 | Limpieza de repositorio y purga de historial | 1 | 1 |
+| 2026-10-24 | Eliminación de Demo y actualización de README | 1 | 1 |
+| 2026-10-24 | Alineación al flujo models_TB + pesos exportados | 1 | 1 |

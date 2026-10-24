@@ -1,17 +1,21 @@
-# CONTEXT.md — Sistema de Detección de Tuberculosis Asistida por IA
+# CONTEXT.md — TB Detection System
 
 > Documento de contexto generado durante la adopción SDD del proyecto legado.
 > Última actualización: 2026-10-24
 
 ## 1. Visión del proyecto
 
-Sistema web de apoyo al diagnóstico de tuberculosis pulmonar a partir de radiografías de tórax. Permite registrar pacientes, subir estudios, ejecutar inferencia con un modelo de deep learning, visualizar un mapa de calor (Grad-CAM) y registrar la validación final de un profesional de la salud.
+Aplicación web Flask para el apoyo al diagnóstico de tuberculosis pulmonar. Permite registrar médicos, pacientes y estudios; cargar radiografías; ejecutar inferencia usando los pesos exportados desde `TB-prediction-model`; visualizar resultados y Grad-CAM; y registrar la validación final del profesional de la salud.
+
+Los modelos se entrenan y exportan en `TB-prediction-model`. En este repositorio se colocan los archivos `.h5` exportados en `models_TB/` para que los servicios/endpoints ya existentes realicen la inferencia localmente.
 
 El sistema **no sustituye** el diagnóstico médico. Toda salida de IA es un insumo preliminar sujeto a validación clínica.
 
 ## 2. Objetivos
 
-- Reducir el tiempo de triage de radiografías de tórax.
+- Permitir inferencia con pesos exportados desde `TB-prediction-model` colocados en `models_TB/`.
+- Mantener la UI/UX, autenticación, gestión clínica y flujo de diagnóstico.
+- Reducir el tiempo de triage de radiografías de tórax con explicabilidad visual (Grad-CAM).
 - Ofrecer una probabilidad de TB con nivel de riesgo y explicabilidad visual.
 - Mantener trazabilidad entre paciente, estudio, resultado de IA y diagnóstico médico.
 - Operar en un entorno clínico con autenticación de médicos y aislamiento por institución.
@@ -32,16 +36,16 @@ El sistema **no sustituye** el diagnóstico médico. Toda salida de IA es un ins
 | Autenticación | Flask-Login | 0.6.3 |
 | Formularios/CSRF | Flask-WTF | 1.2.2 (instalado, no integrado) |
 | CORS | Flask-CORS | 4.0.0 |
-| Servidor WSGI | Werkzeug (dev) | 2.3.7 |
-| Deep learning | TensorFlow / Keras | 2.13.0 |
-| Procesamiento de imagen | OpenCV, Pillow | 4.8.1.78 / 10.0.0 |
-| Visualización | Matplotlib (Grad-CAM) | No fijada en requirements |
+| Servidor WSGI | Werkzeug (dev), gunicorn (prod) | 2.3.7 / 21.2.0 |
+| Deep learning (opcional local) | TensorFlow / Keras + tf-keras | 2.16.2 / 2.16.0 |
+| Procesamiento de imagen (opcional local) | OpenCV, Pillow | 4.10.0.84 / 10.4.0 |
+| Visualización (opcional local) | Matplotlib (Grad-CAM) | 3.8.4 |
 | Base de datos | SQLite (dev), PostgreSQL (producción prevista) | — |
 | Frontend | Jinja2 + Bootstrap 5 + jQuery 3.6 | CDN |
 | Iconografía | Font Awesome 6.4 | CDN |
 | Contenedores | Docker | python:3.10-slim |
 
-> Nota: `python-dotenv` y `matplotlib` se importan en el código pero no figuran en `requirements.txt`. PostgreSQL no tiene driver instalado.
+> Nota: `requirements.txt` contiene solo el stack base de la UI y se probó con Python 3.12. `requirements-local-model.txt` contiene los extras opcionales para el fallback de inferencia local; `tensorflow==2.13.0` del repositorio del modelo no es compatible con Python 3.12. PostgreSQL sigue sin driver instalado; se añadirá `psycopg2-binary` al desplegar con PostgreSQL.
 
 ## 5. Estructura de carpetas
 
@@ -54,7 +58,7 @@ TB-detection-system/
 │   │   ├── main.py              # Vistas: index, dashboard, profile, upload, results
 │   │   ├── auth.py              # Registro, login, logout
 │   │   └── api.py               # API JSON: predict, studies, study detail, diagnosis, profile
-│   ├── services/ai_service.py   # TBInference: carga, preproceso, predicción, Grad-CAM
+│   ├── services/ai_service.py   # Carga de `models_TB/tb_model.h5`, preproceso, predicción, Grad-CAM
 │   ├── static/css/style.css     # Estilos propios sobre Bootstrap
 │   ├── static/js/               # app.js, upload.js, results.js (jQuery + AJAX)
 │   ├── static/img/              # Assets de landing
@@ -62,12 +66,13 @@ TB-detection-system/
 │   └── templates/               # base, index, login, register, dashboard, upload, results, profile
 ├── config.py                    # Config, DevelopmentConfig, ProductionConfig
 ├── run.py                       # Punto de entrada Flask
-├── start.sh                     # Script local con ruta absoluta hardcodeada
+├── start.sh                     # Lanzador local con autodetección de venv
 ├── Dockerfile / .dockerignore
 ├── requirements.txt
-├── models_TB/tb_model.h5        # Modelo local ignorado; pertenece a TB-prediction-model
+├── requirements-local-model.txt # Dependencias para cargar el modelo local
+├── models_TB/tb_model.h5        # Pesos exportados desde TB-prediction-model (ignorado)
 ├── instance/                    # SQLite local ignorado, no versionado
-├── Demo/                        # Capturas para README
+├── .venv/                       # Entorno virtual local ignorado
 ├── .env                         # Secretos locales ignorados, no versionados
 ├── .context/                    # Contexto SDD (este directorio)
 ├── .prompts/                    # Roles de trabajo
@@ -88,13 +93,15 @@ Relaciones: `Institucion 1—N Paciente/Estudio/User`; `Paciente 1—N Estudio`;
 
 ## 7. Modelo de IA
 
-- Arquitectura: DenseNet121 preentrenado + GlobalAveragePooling + BatchNormalization + Dense/Dropout.
-- Parámetros: ~7.18 M totales, ~3.03 M entrenables.
-- Entrada: imagen RGB redimensionada a 224×224, normalizada a [0, 1].
-- Salida: probabilidad binaria de tuberculosis (sigmoide de 1 neurona o segunda clase).
-- Explicabilidad: Grad-CAM sobre la última capa convolucional; heatmap PNG semitransparente.
-- Umbrales funcionales actuales: `> 0.5` positivo; `> 0.8` riesgo alto; `> 0.5` riesgo medio.
-- El artefacto `tb_model.h5` ya **no está versionado** en este repositorio. El modelo se desarrolla y exporta en `TB-prediction-model`; aquí se conserva una copia local ignorada solo como respaldo temporal hasta migrar a la API remota.
+- **Origen**: exportado desde `TB-prediction-model`.
+- **Ubicación**: `models_TB/tb_model.h5` (ignorado por Git).
+- **Carga**: `TBInference` carga el modelo con `tf.keras.models.load_model` al usar `/api/predict`.
+- **Arquitectura esperada**: compatible con DenseNet121 + cabezal binario (según lo usado por el servicio).
+- **Entrada**: imagen RGB redimensionada a 224×224, normalizada a [0, 1].
+- **Salida**: probabilidad binaria de tuberculosis.
+- **Explicabilidad**: Grad-CAM sobre la última capa convolucional; heatmap PNG semitransparente.
+- **Umbrales funcionales actuales**: `> 0.5` positivo; `> 0.8` riesgo alto; `> 0.5` riesgo medio.
+- **Requisitos**: instalar `requirements-local-model.txt` para cargarlo con Python 3.10–3.12.
 
 ## 8. Reglas de negocio fijas
 
@@ -113,22 +120,22 @@ Relaciones: `Institucion 1—N Paciente/Estudio/User`; `Paciente 1—N Estudio`;
 
 ## 9. Alcance actual y limitaciones conocidas
 
-Implementado: autenticación básica, dashboard, carga de imágenes, inferencia local heredada, Grad-CAM, persistencia de estudios/resultados/diagnósticos, perfil de usuario, Dockerfile.
+Implementado: autenticación básica, dashboard, carga de imágenes, persistencia de estudios/resultados/diagnósticos, perfil de usuario, inferencia con `models_TB/tb_model.h5`, Grad-CAM, Dockerfile.
 
-No implementado o incompleto: cliente HTTP del modelo remoto, recuperación de contraseña, roles/permisos finos, aislamiento multi-institución, exportación PDF, auditoría real, soporte DICOM, migraciones de BD, pruebas automatizadas, CI/CD, observabilidad, métricas verificables del modelo.
+No implementado o incompleto: recuperación de contraseña, roles/permisos finos, aislamiento multi-institución, exportación PDF, auditoría real, soporte DICOM, migraciones de BD, pruebas automatizadas, CI/CD y observabilidad.
 
 Estado del repositorio tras la limpieza del 2026-10-24:
 - `.env`, bases SQLite, imágenes médicas, `model_summary.txt` y `tb_model.h5` fueron eliminados del índice y purgados del historial.
-- El historial se redujo de ~46 MiB a ~1.2 MiB.
-- El modelo y `.env` siguen existiendo solo en local y están ignorados.
-- Pendiente: rotar los secretos expuestos y migrar la inferencia local a la API de `TB-prediction-model`.
+- `Demo/` fue eliminado; el historial se redujo de ~46 MiB a ~1.3 MiB.
+- `.env` y los pesos en `models_TB/` existen solo en local y están ignorados; las credenciales de `.env` fueron rotadas por el usuario.
+- El desarrollador debe colocar el peso exportado desde `TB-prediction-model` en `models_TB/tb_model.h5` y instalar `requirements-local-model.txt`.
 
 ## 10. Riesgos principales
 
-- Secretos que estuvieron versionados: rotación pendiente aunque ya se purgaran del historial.
 - Clave por defecto en `config.py` si falta `SECRET_KEY`.
 - Ausencia de pruebas y de migraciones.
 - CORS abierto, sin CSRF, sin rate limiting.
 - Posible acceso cruzado a estudios entre instituciones (IDOR).
 - XSS almacenado en renderizado de datos con plantillas de string en jQuery.
 - `debug=True` en el punto de entrada y servidor de desarrollo en Docker.
+- `/api/predict` requiere `models_TB/tb_model.h5` y las dependencias de `requirements-local-model.txt`; sin ellos falla al cargar el modelo.

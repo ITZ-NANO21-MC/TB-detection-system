@@ -31,9 +31,18 @@ MANIFEST
 venv/
 env/
 ENV/
-.env
 .venv
 .tb_env/
+
+# Environment files (keep the example template)
+.env
+.env.*
+!.env-example
+
+# Secrets
+*.pem
+*.key
+secrets/
 
 # Flask
 instance/

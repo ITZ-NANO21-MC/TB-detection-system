@@ -5,7 +5,7 @@
 > Analista: Arquitecto de software / auditor técnico
 > Alcance: código, configuración, plantillas, assets, esquema de datos, historial Git y artefactos de despliegue.
 
-> **Nota de vigencia**: este informe describe el estado **previo** a la limpieza del repositorio. El mismo 2026-10-24 se purgaron del historial `.env`, bases SQLite, imágenes médicas, `model_summary.txt` y `models_TB/tb_model.h5`; el repositorio pasó de ~46 MiB a ~1.2 MiB. Los hallazgos S1–S3 quedaron remediados en el árbol y el historial, pero **la rotación de secretos sigue pendiente**.
+> **Nota de vigencia**: este informe describe el estado **previo** a la limpieza y reestructuración del repositorio. El 2026-10-24 se purgaron del historial `.env`, bases SQLite, imágenes médicas, `model_summary.txt` y `models_TB/tb_model.h5`; `Demo/` fue eliminado. El repositorio pasó de ~46 MiB a ~1.3 MiB. Las credenciales fueron rotadas. `requirements.txt` se redujo al stack base de UI/UX; los extras de inferencia local se movieron a `requirements-local-model.txt`. La UI ahora puede arrancar sin TensorFlow. El modelo debe consumirse desde `TB-prediction-model` por API.
 
 ---
 

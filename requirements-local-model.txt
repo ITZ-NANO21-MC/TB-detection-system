@@ -1,0 +1,11 @@
+# Dependencias opcionales para el modo de inferencia local heredado.
+# No son necesarias para la UI/UX ni para la futura integración por API.
+# Requiere Python 3.10–3.12 y los pesos en models_TB/tb_model.h5 (ignorado por Git).
+-r requirements.txt
+
+tensorflow==2.16.2
+tf-keras==2.16.0
+numpy==1.26.4
+opencv-python==4.10.0.84
+Pillow==10.4.0
+matplotlib==3.8.4

@@ -1,24 +1,71 @@
-# Caches de Python
+# Python caches
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
 
-# Entornos virtuales
+# Virtual environments
 env/
 venv/
+.venv/
+.tb_env/
+
+# Secrets and environment files
 .env
+.env.*
+.env-example
+*.pem
+*.key
+secrets/
 
-# Base de datos local (opcional, si se quiere una limpia en el contenedor)
-# tb_detection.db
+# Runtime data
 instance/
+*.db
+*.sqlite
+*.sqlite3
+app/static/uploads/
+uploads/
+*.log
+logs/
+session-*.md
 
-# Git
-.git
-.gitignore
+# ML artifacts and datasets (provided at runtime or by TB-prediction-model)
+models_TB/
+models/
+*.h5
+*.hdf5
+*.onnx
+*.pth
+*.pt
+Dataset/
+data/
+datasets/
 
-# Documentos y otros archivos innecesarios
+# Documentation and SDD context
 README.md
-model_summary.txt
-.gemini/
-.agent/
-brain/
+docs/
+.context/
+.prompts/
+Demo/
+*.md
+
+# Git and tooling
+.git/
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose*.yml
+start.sh
+.github/
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

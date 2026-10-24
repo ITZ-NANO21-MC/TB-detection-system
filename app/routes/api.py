@@ -10,10 +10,25 @@ from config import config
 
 api_bp = Blueprint('api', __name__)
 
-# Instancia global del servicio de IA
-# Usamos la ruta del modelo especificada en la configuración
-inference_service = TBInference(config['default'].MODEL_PATH)
-inference_service.load_model()
+# El modelo local es transitorio. Se carga solo cuando se usa /api/predict
+# para que la UI pueda arrancar sin TensorFlow instalado.
+_inference_service = None
+
+
+def get_inference_service():
+    """Devuelve el servicio de inferencia local, cargándolo de forma perezosa."""
+    global _inference_service
+
+    if _inference_service is None:
+        service = TBInference(config['default'].MODEL_PATH)
+        if not service.load_model():
+            raise RuntimeError(
+                "Inferencia local no disponible. Instala requirements-local-model.txt "
+                "o configura el cliente de la API remota de TB-prediction-model."
+            )
+        _inference_service = service
+
+    return _inference_service
 
 def allowed_file(filename):
     """Verifica si el archivo tiene una extensión permitida"""
@@ -100,7 +115,10 @@ def predict():
             db.session.flush()
 
         # 2. Realizar inferencia
-        results = inference_service.predict(filepath)
+        try:
+            results = get_inference_service().predict(filepath)
+        except RuntimeError as exc:
+            return jsonify({'error': str(exc)}), 503
         
         # 3. Guardar Estudio
         new_study = Estudio(

@@ -1,8 +1,21 @@
 import os
-import tensorflow as tf
-import numpy as np
-from PIL import Image
-import matplotlib.cm as cm
+
+try:
+    os.environ.setdefault("TF_USE_LEGACY_KERAS", "1")
+    import numpy as np
+    import tensorflow as tf
+    from PIL import Image
+    import matplotlib.cm as cm
+
+    ML_DEPENDENCIES_AVAILABLE = True
+    ML_IMPORT_ERROR = None
+except ImportError as exc:
+    np = None
+    tf = None
+    Image = None
+    cm = None
+    ML_DEPENDENCIES_AVAILABLE = False
+    ML_IMPORT_ERROR = exc
 
 class TBInference:
     """Clase para manejar las inferencias del modelo de IA"""
@@ -14,6 +27,13 @@ class TBInference:
         
     def load_model(self):
         """Carga el modelo de TensorFlow/Keras"""
+        if not ML_DEPENDENCIES_AVAILABLE:
+            print(
+                "Inferencia local no disponible. "
+                f"Instala requirements-local-model.txt ({ML_IMPORT_ERROR})."
+            )
+            return False
+
         if os.path.exists(self.model_path):
             try:
                 self.model = tf.keras.models.load_model(self.model_path)
@@ -54,8 +74,6 @@ class TBInference:
         
         deteccion = probabilidad > 0.5
         
-        # Generar Mapa de Calor (Grad-CAM)
-        heatmap_path = None
         # Generar Mapa de Calor (Grad-CAM)
         heatmap_path = None
         # Siempre intentamos generar el heatmap para fines de depuración/visualización

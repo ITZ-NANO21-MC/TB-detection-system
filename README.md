@@ -1,273 +1,128 @@
-# 🏥 Sistema de Detección de Tuberculosis Asistida por IA
+# TB Detection System
 
-![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
-![Flask](https://img.shields.io/badge/Flask-2.3.3-green)
-![TensorFlow](https://img.shields.io/badge/TensorFlow-2.13.0-orange)
-![License](https://img.shields.io/badge/License-MIT-yellow)
+Aplicación web Flask para el apoyo al diagnóstico de tuberculosis pulmonar a partir de radiografías de tórax. Usa los pesos exportados desde [`TB-prediction-model`](https://github.com/ITZ-NANO21-MC/TB-prediction-model).
 
-Sistema web avanzado para el apoyo al diagnóstico de tuberculosis pulmonar mediante inteligencia artificial y aprendizaje profundo.
+## Arquitectura
 
-## 📋 Tabla de Contenidos
+- **TB-prediction-model**: entrenamiento, validación, exportación y versionado de modelos (`.h5`).
+- **TB-detection-system** (este repositorio): UI web, gestión de pacientes/estudios, autenticación, resultados, mapa de calor (Grad-CAM) e inferencia usando el modelo colocado en `models_TB/`.
 
-- [Características](#-características)
-- [Demo](#-demo)
-- [Instalación](#-instalación)
-- [Uso](#-uso)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [API](#-api)
-- [Base de Datos](#-base-de-datos)
-- [Desarrollo](#-desarrollo)
-- [Tecnologías](#-tecnologías)
-- [Licencia](#-licencia)
+## Características
 
-## ✨ Características
+- Autenticación con Flask-Login (registro/login).
+- Gestión de pacientes, estudios, prioridades y notas clínicas.
+- Subida de imágenes con validación (`.png`, `.jpg`, `.jpeg`, `.dcm`).
+- Inferencia con TensorFlow/Keras usando el peso en `models_TB/`.
+- Explicabilidad con Grad-CAM.
+- Persistencia con SQLAlchemy (SQLite por defecto).
+- API JSON para predecir, listar y actualizar diagnósticos.
 
-### 🔬 Diagnóstico Asistido por IA
-- **Análisis automático** de radiografías torácicas
-- **Detección de patrones** de tuberculosis con alta precisión
-- **Mapas de calor** para visualización de áreas de interés
-- **Métricas de confianza** en tiempo real
+## Requisitos
 
-### 💻 Interfaz Moderna
-- **Diseño responsive** compatible con dispositivos móviles
-- **Flujo guiado** paso a paso para nuevos estudios
-- **Drag & drop** para carga intuitiva de imágenes
-- **Visualización avanzada** de resultados
-
-### 🗄️ Gestión de Pacientes
-- **Registro completo** de historiales médicos
-- **Seguimiento temporal** de estudios
-- **Búsqueda avanzada** por múltiples criterios
-- **Exportación de reportes** en formato PDF
-
-### 🔒 Seguridad y Auditoría
-- **Base de datos segura** con relaciones normalizadas
-- **Registro de auditoría** de todas las operaciones
-- **Manejo de errores** robusto
-- **Validación de datos** en frontend y backend
-
-## 🎯 Demo
-
-### Capturas de Pantalla
-
-| Dashboard Principal | Subida de Imágenes | Resultados de IA |
-|---------------------|-------------------|------------------|
-| ![Dashboard](TB-detection-system/Demo/Dashboard.png) | ![Upload](TB-detection-system/Demo/Upload.png) | ![Results](TB-detection-system/Demo/Results) |
-
-### Métricas de Rendimiento
-- **Precisión del modelo**: 95%
-- **Sensibilidad**: 93%
-- **Especificidad**: 96%
-- **Tiempo de procesamiento**: < 5 segundos
-
-## 🚀 Instalación
-
-### Prerrequisitos
-- Python 3.8 o superior
-- pip (gestor de paquetes de Python)
+- Python 3.10–3.12
+- pip
 - Git
 
-### Pasos de Instalación
+## Instalación
 
-1. **Clonar el repositorio**
-   ```bash
-   git clone https://github.com/ITZ-NANO21-MC/TB-detection-system.git
-   cd tb-detection-system
-   ```
-
-2. **Crear entorno virtual**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # Linux/Mac
-   # o
-   venv\Scripts\activate     # Windows
-   ```
-
-3. **Instalar dependencias**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Configurar variables de entorno**
-   ```bash
-   cp .env.example .env
-   # Editar .env con tus configuraciones
-   ```
-
-5. **Inicializar la base de datos**
-   ```bash
-   python app.py
-   # La base de datos se crea automáticamente
-   ```
-
-6. **Ejecutar la aplicación**
-   ```bash
-   python app.py
-   ```
-
-La aplicación estará disponible en `http://localhost:5000`
-
-### Configuración con Docker
+### 1) Clonar y crear entorno
 
 ```bash
-# Construir la imagen
+git clone https://github.com/ITZ-NANO21-MC/TB-detection-system.git
+cd TB-detection-system
+
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+pip install -r requirements.txt
+```
+
+### 2) Instalar dependencias para inferencia
+
+El sistema usa el modelo cargado localmente. Instala las dependencias ML:
+
+```bash
+pip install -r requirements-local-model.txt
+```
+
+### 3) Colocar el peso del modelo
+
+Descarga el modelo entrenado desde `TB-prediction-model` (o el archivo exportado) y colócalo en:
+
+```text
+models_TB/tb_model.h5
+```
+
+> `models_TB/` está ignorado por Git. No subas los pesos al repositorio. El nombre por defecto esperado es `tb_model.h5`. Puedes ajustar `MODEL_PATH` en `config.py` si usas otro nombre.
+
+### 4) Configurar variables de entorno
+
+```bash
+cp .env-example .env
+# Edita .env: SECRET_KEY, DATABASE_URL, etc.
+```
+
+### 5) Ejecutar
+
+```bash
+python run.py
+# o
+./start.sh
+```
+
+La app estará en `http://localhost:5000`. La base de datos se crea en `instance/`.
+
+## Docker
+
+```bash
 docker build -t tb-detection-system .
-
-# Ejecutar el contenedor
-docker run -p 5000:5000 tb-detection-system
+docker run --env-file .env -p 5000:5000 \
+  -v "$(pwd)/models_TB:/app/models_TB:ro" \
+  -v tb_data:/app/instance \
+  tb-detection-system
 ```
 
-## 📖 Uso
+La imagen debe tener las dependencias ML instaladas para usar el contenedor con el modelo montado.
 
-### Flujo de Trabajo Típico
+## Uso rápido
 
-1. **Acceso al Sistema**
-   - Abrir navegador en `http://localhost:5000`
-   - Navegar por el dashboard principal
+1. Regístrate/inicia sesión.
+2. `Nuevo Estudio` → completa datos del paciente.
+3. Sube radiografía → se ejecuta la inferencia con `models_TB/tb_model.h5`.
+4. Revisa resultado + heatmap y registra el diagnóstico médico.
 
-2. **Nuevo Estudio**
-   - Click en "Nuevo Estudio"
-   - Completar datos del paciente
-   - Subir imagen de radiografía (drag & drop o selector)
-   - Confirmar envío para análisis
+## Estructura
 
-3. **Análisis con IA**
-   - El sistema procesa la imagen automáticamente
-   - Genera resultados en segundos
-   - Muestra métricas de confianza
-
-4. **Revisión de Resultados**
-   - Visualizar imagen original + mapa de calor
-   - Revisar hallazgos detectados
-   - Confirmar o modificar diagnóstico
-
-5. **Gestión de Historial**
-   - Consultar estudios anteriores
-   - Filtrar por paciente, fecha o diagnóstico
-   - Exportar reportes
-
-### Formatos de Imagen Soportados
-
-- **DICOM** (.dcm) - Formato médico estándar
-- **JPEG** (.jpg, .jpeg) - Imágenes comprimidas
-- **PNG** (.png) - Imágenes sin pérdida
-
-## 🏗️ Estructura del Proyecto
-
-```
-tb-detection-system/
-├── app.py                 # Aplicación principal Flask
-├── model.py              # Clase de inferencia del modelo IA
-├── database.py           # Modelos de base de datos
-├── config.py             # Configuración de la aplicación
-├── requirements.txt      # Dependencias de Python
-├── static/
-│   ├── css/
-│   │   └── style.css    # Estilos principales
-│   ├── js/
-│   │   ├── app.js       # JavaScript principal
-│   │   ├── upload.js    # Gestión de subidas
-│   │   └── results.js   # Visualización de resultados
-│   └── uploads/          # Imágenes subidas
-├── templates/
-│   ├── base.html        # Plantilla base
-│   ├── index.html       # Página principal
-│   ├── upload.html      # Subida de estudios
-│   └── results.html     # Resultados de análisis
-└── models/
-    └── tb_model.h5      # Modelo de IA entrenado
+```text
+TB-detection-system/
+├── app/
+│   ├── routes/{main,auth,api}.py
+│   ├── services/ai_service.py
+│   ├── models/__init__.py
+│   ├── templates/
+│   └── static/
+├── models_TB/        # Pesos exportados desde TB-prediction-model (ignorado)
+├── config.py
+├── run.py
+├── requirements.txt
+├── requirements-local-model.txt
+└── .env-example
 ```
 
-## 🔌 API
-
-### Endpoints Principales
+## Endpoints principales
 
 | Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `GET` | `/api/studies` | Listar todos los estudios |
-| `GET` | `/api/study/<id>` | Obtener detalles de estudio |
-| `POST` | `/api/predict` | Procesar nueva imagen |
+|---|---|---|
+| `POST` | `/api/predict` | Predicción con imagen + datos del paciente |
+| `GET` | `/api/studies` | Listado de estudios |
+| `GET` | `/api/study/<id>` | Detalle de estudio |
 | `POST` | `/api/update_diagnosis` | Actualizar diagnóstico médico |
 
-### Ejemplo de Uso de API
+## Notas
 
-```python
-import requests
+- Si `models_TB/tb_model.h5` no existe o faltan dependencias ML, `TBInference.load_model()` lo indicará y la predicción fallará.
+- `.env`, `instance/`, imágenes subidas y pesos están ignorados por Git.
+- Este sistema es solo para apoyo diagnóstico; no sustituye el criterio médico.
 
-# Subir imagen para análisis
-files = {'file': open('radiografia.png', 'rb')}
-data = {
-    'nombre_paciente': 'Juan Pérez',
-    'expediente': 'XP12345',
-    'edad': 45,
-    'genero': 'masculino'
-}
+## Licencia
 
-response = requests.post('http://localhost:5000/api/predict', 
-                        files=files, data=data)
-result = response.json()
-```
-
-## 🗃️ Base de Datos
-
-### Esquema Principal
-
-```sql
-INSTITUCIONES → PACIENTES → ESTUDIOS → RESULTADOS_IA
-                              ↓
-                         DIAGNOSTICOS
-```
-
-### Entidades Principales
-
-- **Pacientes**: Información demográfica e historial médico
-- **Estudios**: Metadatos de cada análisis realizado
-- **Resultados_IA**: Predicciones y métricas del modelo
-- **Diagnosticos**: Diagnósticos finales del médico
-
-## 🛠️ Desarrollo
-
-### Contribuir al Proyecto
-
-1. Fork el proyecto
-2. Crear una rama feature (`git checkout -b feature/AmazingFeature`)
-3. Commit cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir un Pull Request
-
-### Estructura de Commits
-
-Usamos Conventional Commits:
-- `feat:` Nueva funcionalidad
-- `fix:` Corrección de bugs
-- `docs:` Documentación
-- `style:` Cambios de formato
-- `refactor:` Refactorización de código
-- `test:` Adición de tests
-
-## 🛡️ Tecnologías
-
-### Backend
-- **Flask** - Framework web ligero
-- **SQLAlchemy** - ORM para base de datos
-- **TensorFlow** - Framework de machine learning
-- **OpenCV** - Procesamiento de imágenes
-
-### Frontend
-- **Bootstrap 5** - Framework CSS
-- **JavaScript ES6+** - Interactividad
-- **Font Awesome** - Iconografía
-- **Chart.js** - Visualización de datos
-
-### Base de Datos
-- **SQLite** (Desarrollo)
-- **PostgreSQL** (Producción)
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
-
-## ⚠️ Descargo de Responsabilidad
-
-Este sistema está diseñado para **asistir** a profesionales de la salud en el diagnóstico de tuberculosis. **No debe ser usado como único método de diagnóstico**. Siempre consulte con un médico calificado para diagnósticos definitivos.
-
+Pendiente de definir.
