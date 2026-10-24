@@ -12,14 +12,16 @@
 
 ## Última acción
 
-Alineación al flujo correcto (2026-10-24):
-- README actualizado: los pesos se colocan en `models_TB/tb_model.h5` desde `TB-prediction-model`.
-- `.context/` actualizado para reflejar inferencia local con archivos exportados.
-- `ai_service.py` mantiene carga opcional de TensorFlow para arrancar la app, pero el uso requiere el modelo y `requirements-local-model.txt`.
+Preparación del repositorio para inferencia con pesos locales (2026-10-24):
+- Commit `6217b03` enviado a `origin/main`.
+- `models_TB/` usado para los pesos exportados desde `TB-prediction-model` (`tb_model.h5` presente localmente, ignorado por Git).
+- `requirements.txt` base de UI, `requirements-local-model.txt` con dependencias ML.
+- `Dockerfile`, `.dockerignore`, `start.sh` y configuración actualizados.
+- `README.md` y `.context/` alineados al flujo: copiar `.h5` a `models_TB/` e instalar deps ML.
 
 ## Siguiente acción
 
-Validar carga del modelo con los pesos colocados y completar hardening (SECRET_KEY sin default, pruebas básicas).
+Verificar carga del modelo con `TBInference` y completar hardening: eliminar clave por defecto de `SECRET_KEY`, añadir pruebas básicas.
 
 ## Bloqueos
 
@@ -27,13 +29,12 @@ Validar carga del modelo con los pesos colocados y completar hardening (SECRET_K
 - **Alto**: ausencia total de pruebas automatizadas y de CI.
 - **Medio**: falta el driver PostgreSQL (`psycopg2-binary`) cuando se use en producción.
 - **Medio**: sin migraciones de base de datos; `db.create_all()` en el arranque.
-- **Medio**: verificar que el archivo en `models_TB/` sea compatible con `TBInference`.
 
 ## Métricas de referencia
 
 | Indicador | Valor |
 |---|---|
-| Archivos versionados | 36 |
+| Archivos versionados | ~38 |
 | Archivos Python de aplicación | 6 |
 | Plantillas HTML | 8 |
 | Archivos JS propios | 3 |
@@ -53,3 +54,4 @@ Validar carga del modelo con los pesos colocados y completar hardening (SECRET_K
 | 2026-10-24 | Limpieza de repositorio y purga de historial | 1 | 1 |
 | 2026-10-24 | Eliminación de Demo y actualización de README | 1 | 1 |
 | 2026-10-24 | Alineación al flujo models_TB + pesos exportados | 1 | 1 |
+| 2026-10-24 | Commit y push: preparación para pesos locales | 1 | 1 |
