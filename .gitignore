@@ -1,8 +1,12 @@
-# Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+
+# C extensions
 *.so
+
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -16,31 +20,82 @@ parts/
 sdist/
 var/
 wheels/
+pip-wheel-metadata/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# Virtual Environment
+# Virtual environments
 venv/
 env/
 ENV/
 .env
+.venv
+.tb_env/
 
-# Flask/Database
+# Flask
 instance/
 .webassets-cache
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
 tb_detection.db
 
-# Project Specific
-static/uploads/*
-!static/uploads/.gitkeep
+# Uploads
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+/uploads/
 
-# IDEs/Editors
+# Session logs
+session-*.md
+
+# ML models & datasets (heavy files)
+models_TB/
+*.h5
+*.hdf5
+*.pb
+*.ckpt
+*.pth
+*.pt
+*.onnx
+
+# Datasets
+Dataset/
+data/
+datasets/
+
+# Jupyter
+.ipynb_checkpoints
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+Desktop.ini
+
+# IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
-# OS
-.DS_Store
-Thumbs.db
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Others
+*.bak
+*.tmp
+model_summary.txt
