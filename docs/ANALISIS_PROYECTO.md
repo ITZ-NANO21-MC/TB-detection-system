@@ -5,6 +5,8 @@
 > Analista: Arquitecto de software / auditor técnico
 > Alcance: código, configuración, plantillas, assets, esquema de datos, historial Git y artefactos de despliegue.
 
+> **Nota de vigencia**: este informe describe el estado **previo** a la limpieza del repositorio. El mismo 2026-10-24 se purgaron del historial `.env`, bases SQLite, imágenes médicas, `model_summary.txt` y `models_TB/tb_model.h5`; el repositorio pasó de ~46 MiB a ~1.2 MiB. Los hallazgos S1–S3 quedaron remediados en el árbol y el historial, pero **la rotación de secretos sigue pendiente**.
+
 ---
 
 ## 1. Resumen ejecutivo

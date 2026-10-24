@@ -58,18 +58,17 @@ TB-detection-system/
 │   ├── static/css/style.css     # Estilos propios sobre Bootstrap
 │   ├── static/js/               # app.js, upload.js, results.js (jQuery + AJAX)
 │   ├── static/img/              # Assets de landing
-│   ├── static/uploads/          # Radiografías y heatmaps (servidos públicamente)
+│   ├── static/uploads/          # Solo .gitkeep; contenido local ignorado
 │   └── templates/               # base, index, login, register, dashboard, upload, results, profile
 ├── config.py                    # Config, DevelopmentConfig, ProductionConfig
 ├── run.py                       # Punto de entrada Flask
 ├── start.sh                     # Script local con ruta absoluta hardcodeada
 ├── Dockerfile / .dockerignore
 ├── requirements.txt
-├── models_TB/tb_model.h5        # Modelo Keras (DenseNet121)
-├── instance/tb_detection.db     # SQLite de desarrollo
-├── models_TB/tb_model.h5
+├── models_TB/tb_model.h5        # Modelo local ignorado; pertenece a TB-prediction-model
+├── instance/                    # SQLite local ignorado, no versionado
 ├── Demo/                        # Capturas para README
-├── .env                         # SECRET_KEY y DATABASE_URL (actualmente versionado)
+├── .env                         # Secretos locales ignorados, no versionados
 ├── .context/                    # Contexto SDD (este directorio)
 ├── .prompts/                    # Roles de trabajo
 └── docs/                        # Informes de análisis
@@ -94,7 +93,8 @@ Relaciones: `Institucion 1—N Paciente/Estudio/User`; `Paciente 1—N Estudio`;
 - Entrada: imagen RGB redimensionada a 224×224, normalizada a [0, 1].
 - Salida: probabilidad binaria de tuberculosis (sigmoide de 1 neurona o segunda clase).
 - Explicabilidad: Grad-CAM sobre la última capa convolucional; heatmap PNG semitransparente.
-- Umbrales funcionales actuales: `> 0.5` positivo; `> 0.8` riesgo alto; `0.5–0.8` riesgo medio.
+- Umbrales funcionales actuales: `> 0.5` positivo; `> 0.8` riesgo alto; `> 0.5` riesgo medio.
+- El artefacto `tb_model.h5` ya **no está versionado** en este repositorio. El modelo se desarrolla y exporta en `TB-prediction-model`; aquí se conserva una copia local ignorada solo como respaldo temporal hasta migrar a la API remota.
 
 ## 8. Reglas de negocio fijas
 
@@ -113,14 +113,20 @@ Relaciones: `Institucion 1—N Paciente/Estudio/User`; `Paciente 1—N Estudio`;
 
 ## 9. Alcance actual y limitaciones conocidas
 
-Implementado: autenticación básica, dashboard, carga de imágenes, inferencia, Grad-CAM, persistencia de estudios/resultados/diagnósticos, perfil de usuario, Dockerfile.
+Implementado: autenticación básica, dashboard, carga de imágenes, inferencia local heredada, Grad-CAM, persistencia de estudios/resultados/diagnósticos, perfil de usuario, Dockerfile.
 
-No implementado o incompleto: recuperación de contraseña, roles/permisos finos, aislamiento multi-institución, exportación PDF, auditoría real, soporte DICOM, migraciones de BD, pruebas automatizadas, CI/CD, observabilidad, métricas verificables del modelo.
+No implementado o incompleto: cliente HTTP del modelo remoto, recuperación de contraseña, roles/permisos finos, aislamiento multi-institución, exportación PDF, auditoría real, soporte DICOM, migraciones de BD, pruebas automatizadas, CI/CD, observabilidad, métricas verificables del modelo.
+
+Estado del repositorio tras la limpieza del 2026-10-24:
+- `.env`, bases SQLite, imágenes médicas, `model_summary.txt` y `tb_model.h5` fueron eliminados del índice y purgados del historial.
+- El historial se redujo de ~46 MiB a ~1.2 MiB.
+- El modelo y `.env` siguen existiendo solo en local y están ignorados.
+- Pendiente: rotar los secretos expuestos y migrar la inferencia local a la API de `TB-prediction-model`.
 
 ## 10. Riesgos principales
 
-- Secretos versionados (`.env`) y clave por defecto en `config.py`.
-- Imágenes médicas y base de datos versionadas en Git.
+- Secretos que estuvieron versionados: rotación pendiente aunque ya se purgaran del historial.
+- Clave por defecto en `config.py` si falta `SECRET_KEY`.
 - Ausencia de pruebas y de migraciones.
 - CORS abierto, sin CSRF, sin rate limiting.
 - Posible acceso cruzado a estudios entre instituciones (IDOR).

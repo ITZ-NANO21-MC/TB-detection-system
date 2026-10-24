@@ -25,7 +25,7 @@
 - `app/routes/api.py`: autorización por institución en `get_study_detail` y `update_diagnosis`; validación real de archivos (extensión + MIME/magic bytes); manejo explícito de DICOM; eliminar confianza hardcodeada.
 - `app/services/ai_service.py`: carga perezosa del modelo, eliminar duplicación, manejo de errores controlado, soporte o rechazo explícito de DICOM.
 - `run.py`, `Dockerfile`, `start.sh`: `debug` solo en desarrollo, servidor WSGI de producción, eliminar rutas absolutas.
-- `.gitignore` / historial Git: rotar secretos, dejar de versionar `.env`, imágenes subidas, SQLite y modelo; documentar limpieza de historial.
+- `.gitignore` / historial Git: **parcialmente completado (2026-10-24)**: `.env`, SQLite, imágenes, modelo y `model_summary.txt` purgados del historial; queda rotar secretos y migrar la inferencia local a la API.
 - `README.md`: corregir estructura y rutas de demo.
 - `tests/`: prueba de humo mínima de la aplicación y de carga de configuración.
 

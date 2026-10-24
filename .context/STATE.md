@@ -6,39 +6,43 @@
 ## Ubicación actual
 
 - **Fase actual**: Fase 1 — Hardening y estabilización
-- **Módulo actual**: Módulo 1 — Configuración segura y dependencias
-- **Estado de la fase**: No iniciada
-- **Estado del módulo**: Pendiente de planificación
+- **Módulo actual**: Módulo 1 — Configuración segura, dependencias y limpieza del repositorio
+- **Estado de la fase**: En progreso
+- **Estado del módulo**: Limpieza completada; rotación de secretos y refactor pendientes
 
 ## Última acción
 
-Adopción SDD completada:
-- Análisis profundo del proyecto legado.
-- Creación de `.context/` (CONTEXT, ROADMAP, STATE, DECISIONS, PATTERNS).
-- Creación de `.prompts/` con roles Arquitecto, Desarrollador y Tester.
-- Informe en `docs/ANALISIS_PROYECTO.md`.
+Limpieza y purga del repositorio (2026-10-24):
+- `.env`, `instance/`, bases SQLite, 11 imágenes médicas, `model_summary.txt` y `models_TB/tb_model.h5` eliminados del índice.
+- Historial reescrito con `git-filter-repo` y force-push a `origin/main`.
+- Repositorio reducido de ~46 MiB a ~1.2 MiB.
+- `.gitignore` actualizado (`session-*.md`, `models_TB/`, excepción de `.gitkeep`).
+- Modelo y `.env` conservados solo en local e ignorados.
 
 ## Siguiente acción
 
-Ejecutar `/plan-phase --phase 1` para descomponer la Fase 1 en tareas ejecutables y generar `.tasks/TASKS.md`.
+Rotar `SECRET_KEY` y credenciales de `.env`, y planificar el resto de la Fase 1 con `/plan-phase --phase 1`.
 
 ## Bloqueos
 
-- **Crítico**: `.env` versionado con `SECRET_KEY` y `DATABASE_URL`, y clave por defecto en `config.py`. Requiere rotación de secretos y limpieza del historial de Git (coordinado con el usuario).
-- **Crítico**: imágenes médicas y base de datos SQLite versionadas en Git; privacidad y tamaño del repositorio comprometidos.
+- **Crítico**: secretos que estuvieron versionados; rotación pendiente aunque ya se purgaran del historial.
+- **Alto**: `config.py` mantiene una clave por defecto si falta `SECRET_KEY`.
 - **Alto**: ausencia total de pruebas automatizadas y de CI.
 - **Alto**: `requirements.txt` incompleto (`python-dotenv`, `matplotlib`, driver PostgreSQL ausentes).
 - **Medio**: sin migraciones de base de datos; `db.create_all()` en el arranque.
+- **Medio**: la app aún depende de inferencia local y de `models_TB/tb_model.h5`; falta el cliente HTTP hacia `TB-prediction-model`.
 
 ## Métricas de referencia
 
 | Indicador | Valor |
 |---|---|
+| Archivos versionados | 39 |
 | Archivos Python de aplicación | 6 |
 | Plantillas HTML | 8 |
 | Archivos JS propios | 3 |
 | Entidades de datos | 7 |
 | Endpoints HTTP | ~12 |
+| Tamaño del historial Git | ~1.2 MiB |
 | Pruebas automatizadas | 0 |
 | Cobertura estimada | 0 % |
 | Deuda técnica | Alta |
@@ -48,3 +52,4 @@ Ejecutar `/plan-phase --phase 1` para descomponer la Fase 1 en tareas ejecutable
 | Fecha | Acción | Fase | Módulo |
 |---|---|---|---|
 | 2026-10-24 | Adopción SDD y análisis profundo | 1 | 1 |
+| 2026-10-24 | Limpieza de repositorio y purga de historial | 1 | 1 |
