@@ -125,4 +125,4 @@ TB-detection-system/
 
 ## Licencia
 
-Pendiente de definir.
+MIT. Consulta el archivo [LICENSE](LICENSE) para el texto completo.
